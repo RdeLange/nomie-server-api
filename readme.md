@@ -8,7 +8,7 @@ The Nomie API Server provides the backend API functionality which enables the ğŸ
 
 The ğŸªNomie API Plugin documentation and installation instructions can be found at:
 
-[https://github.com/RdeLange/nomie-plugin-api](https://github.com/RdeLange/nomie-plugin-apihttps:/)
+[https://github.com/RdeLange/nomie-plugin-api](https://github.com/RdeLange/nomie-plugin-api)
 
 ## Installing the API Server
 
