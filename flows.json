@@ -557,8 +557,8 @@
                     "edited": false
                 },
                 "page-sidebar-backgroundColor": {
-                    "value": "#333333",
-                    "edited": false
+                    "value": "#343535",
+                    "edited": true
                 },
                 "group-textColor": {
                     "value": "#6db046",
@@ -1969,9 +1969,9 @@
         "d": true,
         "g": "cdbe7e738f29828d",
         "group": "1deed69fcda2c602",
-        "order": 0,
-        "width": "6",
-        "height": "5",
+        "order": 1,
+        "width": 6,
+        "height": 5,
         "name": "Automation",
         "label": "",
         "format": "<h1 id=\"this-is-the-automation-page\">This is the Automation page</h1> <p>Only users that have logged in can access this page by the tab on the left of this site or directly with the <strong><em>URL</em></strong> http(s)://your-ip-address-or-domain/ui/#!/6 If a user tires to access this page or any page you have secured and they have not logged in they will be redirected to the login page.</p>",
@@ -8877,7 +8877,7 @@
         "crontab": "",
         "once": true,
         "onceDelay": 0.1,
-        "topic": "CREATE TABLE s4e_keys(id INTEGER PRIMARY KEY AUTOINCREMENT, apikey TEXT, privatekey TEXT, createddate DATE, createdtime TIME,lastused createddate DATE)",
+        "topic": "CREATE TABLE s4e_keys(id INTEGER PRIMARY KEY AUTOINCREMENT, apikey TEXT, privatekey TEXT, createddate DATE, createdtime TIME,lastused DATE)",
         "payload": "",
         "payloadType": "date",
         "x": 170,
@@ -8948,6 +8948,15 @@
         "type": "inject",
         "z": "f3c4e4370ce1daa7",
         "name": "SELECT",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
         "repeat": "",
         "crontab": "",
         "once": false,
@@ -9074,7 +9083,7 @@
         "crontab": "",
         "once": true,
         "onceDelay": 0.1,
-        "topic": "CREATE TABLE log_entries(idserver INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT, api_key TEXT, note TEXT, lat TEXT, lng TEXT, date DATETIME)",
+        "topic": "CREATE TABLE log_entries(idserver INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT, api_key TEXT, note TEXT, lat TEXT, lng TEXT, date DATETIME, createddate DATE)",
         "payload": "",
         "payloadType": "date",
         "x": 211.4285888671875,
@@ -9138,9 +9147,12 @@
         "type": "function",
         "z": "f3c4e4370ce1daa7",
         "name": "Convert Json",
-        "func": "function GenerateDateId() {\n var dt = new Date();\n var seed = dt.getYear() + dt.getDay() + dt.getMonth();\n var holdrand = ((seed * 214013 + 2531011) >> 16) & 0x7fff;\n holdrand = holdrand*holdrand*holdrand*41441;\n return holdrand;\n}\n\nfunction makeid(length) {\n    var result           = '';\n    var characters       = '0123456789';\n    var charactersLength = characters.length;\n    for ( var i = 0; i < length; i++ ) {\n      result += characters.charAt(Math.floor(Math.random() * \n charactersLength));\n   }\n   return result;\n}\n\ngeneratedid = GenerateDateId()+\"-\"+makeid(6);\nlogentry = msg.payload;\nsqlstatement = \"INSERT INTO log_entries(id, api_key, note, lat, lng, date) values('\"+generatedid+\"','\"+logentry.api_key+\"','\"+logentry.note+\"','\"+logentry.lat+\"','\"+logentry.lng+\"','\"+logentry.date+\"')\";\nmsg.topic = sqlstatement;\n\nif(logentry.api_key && logentry.note) {msg.payload.success = true;}\nelse {msg.payload.success = false;}\nmsg.topic = sqlstatement;\nmsg.payload.id = generatedid;\nreturn msg;",
+        "func": "function GenerateDateId() {\n var dt = new Date();\n var seed = dt.getYear() + dt.getDay() + dt.getMonth();\n var holdrand = ((seed * 214013 + 2531011) >> 16) & 0x7fff;\n holdrand = holdrand*holdrand*holdrand*41441;\n return holdrand;\n}\n\nfunction makeid(length) {\n    var result           = '';\n    var characters       = '0123456789';\n    var charactersLength = characters.length;\n    for ( var i = 0; i < length; i++ ) {\n      result += characters.charAt(Math.floor(Math.random() * \n charactersLength));\n   }\n   return result;\n}\n\nvar generatedid = GenerateDateId()+\"-\"+makeid(6);\nvar logentry = msg.payload;\nvar sqlstatement = \"INSERT INTO log_entries(id, api_key, note, lat, lng, date, createddate) values('\" + generatedid + \"','\" + logentry.api_key + \"','\" + logentry.note + \"','\" + logentry.lat + \"','\" + logentry.lng + \"','\" + logentry.date +\"', date('now'))\";\nmsg.topic = sqlstatement;\n\nif(logentry.api_key && logentry.note) {msg.payload.success = true;}\nelse {msg.payload.success = false;}\nmsg.topic = sqlstatement;\nmsg.payload.id = generatedid;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
         "x": 530,
         "y": 660,
         "wires": [
@@ -9383,9 +9395,12 @@
         "type": "function",
         "z": "f3c4e4370ce1daa7",
         "name": "SELECT ALL LOGS",
-        "func": "apikey = msg.payload[0].apikey;\nsqlstatement = \"SELECT * FROM log_entries WHERE api_key = '\"+apikey+\"'\";\nmsg.payload = apikey;\nmsg.topic = sqlstatement;\nreturn msg;",
+        "func": "var apikey = msg.payload[0].apikey;\nvar sqlstatement = \"SELECT * FROM log_entries WHERE api_key = '\"+apikey+\"'\";\nmsg.payload = apikey;\nmsg.topic = sqlstatement;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
         "x": 970,
         "y": 1060,
         "wires": [
@@ -9946,9 +9961,12 @@
         "type": "function",
         "z": "f3c4e4370ce1daa7",
         "name": "CHECK IF NOTE",
-        "func": "logentry = msg.logentry;\nmsg.payload = logentry;\nif(!msg.payload.lat) {msg.payload.lat = \"\"}\nif(!msg.payload.lng) {msg.payload.lng = \"\"}\nif(!msg.payload.date) {msg.payload.date = Date.now()}\n\nif (msg.payload.note) {msg.payload.success = true}\nelse {msg.payload.success = false}\nreturn msg;",
+        "func": "var logentry = msg.logentry;\nmsg.payload = logentry;\nif(!msg.payload.lat) {msg.payload.lat = \"\"}\nif(!msg.payload.lng) {msg.payload.lng = \"\"}\nif(!msg.payload.date) {msg.payload.date = Date.now()}\n\nif (msg.payload.note) {msg.payload.success = true}\nelse {msg.payload.success = false}\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
         "x": 370,
         "y": 720,
         "wires": [
@@ -9990,7 +10008,7 @@
         "type": "function",
         "z": "f3c4e4370ce1daa7",
         "name": "Set lastused",
-        "func": "let key = msg.payload[0].apikey;\nlet query = \"UPDATE s4e_keys SET lastused = date('now') WHERE apikey = '\"+key+\"'\"\nmsg.payload = query;\nreturn msg;",
+        "func": "let key = msg.payload[0].apikey;\nlet query = \"UPDATE s4e_keys SET lastused = date('now') WHERE apikey = '\"+key+\"'\"\nmsg.topic = query;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -10415,7 +10433,7 @@
         "bgcolor": "",
         "className": "",
         "icon": "",
-        "payload": "CREATE TABLE log_entries(idserver INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT, api_key TEXT, note TEXT, lat TEXT, lng TEXT, date DATETIME)",
+        "payload": "CREATE TABLE log_entries(idserver INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT, api_key TEXT, note TEXT, lat TEXT, lng TEXT, date DATETIME, createddate DATE)",
         "payloadType": "str",
         "topic": "topic",
         "topicType": "msg",
@@ -10467,7 +10485,7 @@
         "type": "function",
         "z": "c4159a309045cd18",
         "name": "function 7",
-        "func": "var query = \"DELETE FROM log_entries WHERE date <= date('now','-30 day')\"; \nmsg.topic = query;\nreturn msg;",
+        "func": "var query = \"DELETE FROM log_entries WHERE createddate <= date('now','-30 day')\"; \nmsg.topic = query;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -10653,7 +10671,7 @@
         "bgcolor": "",
         "className": "",
         "icon": "",
-        "payload": "CREATE TABLE s4e_keys(id INTEGER PRIMARY KEY AUTOINCREMENT, apikey TEXT, privatekey TEXT, createddate DATE, createdtime TIME,lastused createddate DATE)",
+        "payload": "CREATE TABLE s4e_keys(id INTEGER PRIMARY KEY AUTOINCREMENT, apikey TEXT, privatekey TEXT, createddate DATE, createdtime TIME,lastused DATE)",
         "payloadType": "str",
         "topic": "topic",
         "topicType": "msg",
@@ -10728,6 +10746,262 @@
         "wires": [
             [
                 "6d11bcacd6a268f5"
+            ]
+        ]
+    },
+    {
+        "id": "dbf52d0062f39405",
+        "type": "inject",
+        "z": "c4159a309045cd18",
+        "name": "Select all",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "SELECT * FROM s4e_keys ORDER BY lastused ASC LIMIT 100;",
+        "payload": "",
+        "payloadType": "date",
+        "x": 230,
+        "y": 1100,
+        "wires": [
+            [
+                "0a5592bfe79d218f"
+            ]
+        ]
+    },
+    {
+        "id": "0a5592bfe79d218f",
+        "type": "sqlite",
+        "z": "c4159a309045cd18",
+        "mydb": "1ec92ab5.796e65",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "S4E API Keys",
+        "x": 420,
+        "y": 1100,
+        "wires": [
+            [
+                "6b32d4d1fde965f3"
+            ]
+        ]
+    },
+    {
+        "id": "6b32d4d1fde965f3",
+        "type": "split",
+        "z": "c4159a309045cd18",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 610,
+        "y": 1100,
+        "wires": [
+            [
+                "52d4d763aba39b59"
+            ]
+        ]
+    },
+    {
+        "id": "52d4d763aba39b59",
+        "type": "function",
+        "z": "c4159a309045cd18",
+        "name": "Calculate days",
+        "func": "const date = new Date().getTime();\nvar checkdate = (date - new Date(msg.payload.lastused).getTime()) / 86400000;\nvar shortkey = msg.payload.apikey.slice(0, 6)+\"...\";\nmsg.payload.apikey = shortkey;\nmsg.payload.delta = checkdate.toFixed(0);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 1100,
+        "wires": [
+            [
+                "e4caa6556f2f02d5"
+            ]
+        ]
+    },
+    {
+        "id": "e4caa6556f2f02d5",
+        "type": "join",
+        "z": "c4159a309045cd18",
+        "name": "",
+        "mode": "auto",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": "false",
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "x": 970,
+        "y": 1100,
+        "wires": [
+            [
+                "a4915f9146a6df6e"
+            ]
+        ]
+    },
+    {
+        "id": "a4915f9146a6df6e",
+        "type": "ui_template",
+        "z": "c4159a309045cd18",
+        "group": "93ecb54d9a8159f6",
+        "name": "UI Table Keys",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "format": "<table style=\"width:100%\">\n    <tr>\n        <th>Days Ago</th>\n        <th>Key</th>\n    </tr>\n    <tr ng-repeat=\"x in msg.payload | limitTo:200\">\n        <td>{{msg.payload[$index].delta}}</td>\n        <td>{{msg.payload[$index].apikey}}</td>\n    </tr>\n</table>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1160,
+        "y": 1100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "650106e5faa8d7c4",
+        "type": "inject",
+        "z": "c4159a309045cd18",
+        "name": "Select all",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "SELECT * FROM log_entries ORDER BY createddate ASC LIMIT 100;",
+        "payload": "",
+        "payloadType": "date",
+        "x": 230,
+        "y": 1160,
+        "wires": [
+            [
+                "aa107d97b1dbfc14"
+            ]
+        ]
+    },
+    {
+        "id": "eedd1ff182135f94",
+        "type": "split",
+        "z": "c4159a309045cd18",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 610,
+        "y": 1160,
+        "wires": [
+            [
+                "3fc5e81b37193f1e"
+            ]
+        ]
+    },
+    {
+        "id": "3fc5e81b37193f1e",
+        "type": "function",
+        "z": "c4159a309045cd18",
+        "name": "Calculate days",
+        "func": "const date = new Date().getTime();\nvar checkdate = (date - new Date(msg.payload.createddate).getTime()) / 86400000;\nvar shortkey = msg.payload.api_key.slice(0, 6)+\"...\";\nmsg.payload.apikey = shortkey;\nmsg.payload.delta = checkdate.toFixed(0);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 1160,
+        "wires": [
+            [
+                "7e9319054a4d28f0"
+            ]
+        ]
+    },
+    {
+        "id": "7e9319054a4d28f0",
+        "type": "join",
+        "z": "c4159a309045cd18",
+        "name": "",
+        "mode": "auto",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": "false",
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "x": 970,
+        "y": 1160,
+        "wires": [
+            [
+                "8c4664f7381ba59b"
+            ]
+        ]
+    },
+    {
+        "id": "8c4664f7381ba59b",
+        "type": "ui_template",
+        "z": "c4159a309045cd18",
+        "group": "182a18d1397c23f5",
+        "name": "UI Table Logs",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "format": "<table style=\"width:100%\">\n    <tr>\n        <th>Days Ago</th>\n        <th>Key</th>\n    </tr>\n    <tr ng-repeat=\"x in msg.payload | limitTo:200\">\n        <td>{{msg.payload[$index].delta}}</td>\n        <td>{{msg.payload[$index].apikey}}</td>\n    </tr>\n</table>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1160,
+        "y": 1160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "aa107d97b1dbfc14",
+        "type": "sqlite",
+        "z": "c4159a309045cd18",
+        "mydb": "54c0ba27.565fe4",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "LOG Entries",
+        "x": 430,
+        "y": 1160,
+        "wires": [
+            [
+                "eedd1ff182135f94"
             ]
         ]
     }
