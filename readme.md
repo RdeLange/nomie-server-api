@@ -30,7 +30,7 @@ After installing above nodes you can simplu import the flows.json file.
 I have created a predefined docker image which you can use. Please follow below instructions to get the docker container going:
 
 ```text
-docker run -v /host/path:/container/path:/home -p 1880:1880 rdelange/dailynomie-apiserver
+docker run -v /host/path:/container/path:/home -p 1880:1880 ghcr.io/rdelange/nomie-server-awapi:main
 ```
 
 Where '/host/path' is referring to an accesable path on your environment to persist data.
@@ -43,12 +43,12 @@ You can use the following code:
 version: '3'
 services:
  nomieapiserver:
-  image: rdelange/dailynomie-apiserver:latest
+  image: ghcr.io/rdelange/nomie-server-awapi:main
   container_name: dailynomie-apiserver-docker
   volumes:
    - /host/path:/home
   ports:
-      - "1440:1880"
+      - "1880:1880"
 
 ```
 
